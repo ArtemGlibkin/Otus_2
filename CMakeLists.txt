@@ -15,8 +15,8 @@ add_executable(allocator src/main.cpp)
 add_library(allocator_lib STATIC src/MyAllocator.cpp)
 #add_executable(ip_filter_test tests/IPV4PoolTest.cpp)
 
-set_target_properties(ip_filter PROPERTIES
-    CXX_STANDARD 17
+set_target_properties(allocator  PROPERTIES
+    CXX_STANDARD 11
     CXX_STANDARD_REQUIRED ON
 )
 
