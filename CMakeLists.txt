@@ -13,12 +13,15 @@ configure_file(include/version.h.in include/version.h)
 
 add_executable(allocator src/main.cpp)
 add_library(allocator_lib STATIC src/MyAllocator.cpp)
-#add_executable(ip_filter_test tests/IPV4PoolTest.cpp)
+add_executable(allocator_test tests/AllocatorTest.cpp)
 
 set_target_properties(allocator  PROPERTIES
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED ON
 )
+
+find_package(GTest REQUIRED)
+find_package(Threads REQUIRED)
 
 target_include_directories(allocator
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -30,11 +33,16 @@ target_include_directories(allocator_lib
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-#target_include_directories(ip_filter_test PRIVATE ${GTEST_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
-#target_link_libraries(ip_filter_test ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} Threads::Threads ip_filter_lib)
+target_include_directories(allocator_test PRIVATE ${GTEST_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(allocator_test ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} Threads::Threads allocator_lib)
 
 if(MSVC)
 	target_compile_options(allocator_lib PRIVATE /MT)
 	target_compile_options(allocator PRIVATE /MT)
 endif()
 
+enable_testing()
+
+gtest_add_tests(TARGET allocator_test
+				TEST_LIST Map Vector MyContainer
+)

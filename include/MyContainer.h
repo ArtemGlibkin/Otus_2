@@ -51,7 +51,7 @@ public:
 	{
 		Ptr& ptr = *container_last;
 		ptr = std::allocate_shared<Node<T>>(allocator);
-		ptr->element = arg;
+		ptr->element = std::forward<T>(arg);
 		container_last = &ptr->next;
 		container_size += 1;
 	}
@@ -74,6 +74,6 @@ public:
 
 	bool empty()
 	{
-		return container_head == nullptr ? true : false;
+		return container_size;
 	}
 };
