@@ -16,7 +16,7 @@ add_library(allocator_lib STATIC src/MyAllocator.cpp)
 add_executable(allocator_test tests/AllocatorTest.cpp)
 
 set_target_properties(allocator  PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     CXX_STANDARD_REQUIRED ON
 )
 
