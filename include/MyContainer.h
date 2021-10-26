@@ -47,11 +47,13 @@ public:
 
 	MyContainer() = default;
 
-	void push_back(T&& arg)
+	template<typename U>
+	void push_back(U&& arg)
 	{
+		static_assert(std::is_same<std::decay_t<U>, std::decay_t<T>>::value, "U must be the same as T");
 		Ptr& ptr = *container_last;
 		ptr = std::allocate_shared<Node<T>>(allocator);
-		ptr->element = std::forward<T>(arg);
+		ptr->element = arg;
 		container_last = &ptr->next;
 		container_size += 1;
 	}

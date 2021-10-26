@@ -47,8 +47,8 @@ TEST(AllocatorTest, MyContainer) {
 	ASSERT_FALSE(my2.empty());
 	int factorial = 1;
 	for (int i = 0; i < 10; i++) {
-		my.push_back(std::move(i)); //На MSVC почему то компилятор считает, что параметр push_back это rvalue reference
-		my2.push_back(std::move(i)); //На MSVC почему то компилятор считает, что параметр push_back это rvalue reference
+		my.push_back(i); 
+		my2.push_back(i); 
 	}
 	ASSERT_EQ(my.size(), my2.size());
 

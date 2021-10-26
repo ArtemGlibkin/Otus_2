@@ -10,7 +10,7 @@ struct MyAllocator {
 	using memory_ptr = std::shared_ptr<uint8_t[]>;
 	memory_ptr memory = nullptr;
 
-	//Хранение размеров в shared_ptr требуется, чтобы нормально работал конструктор копирования
+	//Storing sizes in shared_ptr is required for the copy constructor to work properly
 	size_ptr chunk_size = std::make_shared<uint32_t>(100 * 128);
 	size_ptr capacity;
 
@@ -32,13 +32,10 @@ struct MyAllocator {
 
 		unsigned int object_size = sizeof(T) * n;
 
-		/*
-			Увеличить размер выделяемой памяти даем, когда вся память пустая;
-		*/
 		if (*capacity == 0 && object_size >= *chunk_size)
 		{
-			*chunk_size *= 2;
-			memory.swap(memory_ptr(new uint8_t[*chunk_size]));
+			*chunk_size = object_size * 2;
+			memory = memory_ptr(new uint8_t[*chunk_size]);
 		}
 		else if (*capacity.get() + object_size >= *chunk_size)
 			throw std::runtime_error("The memory is filled in");
@@ -50,9 +47,9 @@ struct MyAllocator {
 	}
 
 	/*
-		Нормально будет работать только на векторе, когда память удаляется и выделяется сразу. 
-		В остальных случаях память будет простаивать без возможности повторного использования.
-		Как решение: хранить список структур указатель-размер памяти и при каждом новом allocate проверять список
+		It will only work normally on a vector when memory is deleted and allocated at once. 
+		In other cases memory will be idle without the possibility of reuse.
+		As a solution: keep a list of pointer-size memory structures and check the list at each new allocate
 	*/
 	void deallocate(T* p, std::size_t n) {
 
