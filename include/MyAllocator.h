@@ -3,38 +3,57 @@
 #include <memory>
 
 
-template <typename T>
+template <typename T , size_t size = 12800>
 struct MyAllocator {
+	int unique_number = 1;
 	using value_type = T;
 	using size_ptr = std::shared_ptr<uint32_t>;
 	using memory_ptr = std::shared_ptr<uint8_t[]>;
-	memory_ptr memory = nullptr;
+	memory_ptr memory;
 
 	//Storing sizes in shared_ptr is required for the copy constructor to work properly
-	size_ptr chunk_size = std::make_shared<uint32_t>(100 * 128);
-	size_ptr capacity;
+	size_ptr chunk_size = std::make_shared<uint32_t>(size);
+	size_ptr capacity = std::make_shared<uint32_t>(0);
 
 	MyAllocator()
 	{
-		memory = memory_ptr(new uint8_t[*chunk_size]);
-		capacity = std::make_shared<uint32_t>(0);
+		std::cout << "Constructor with unique_number " << unique_number << std::endl << std::endl;
 	}
 
 	template <typename U>
 	MyAllocator(const MyAllocator<U>& copy)
 	{
-		memory = copy.memory;
-		capacity = copy.capacity;
-		chunk_size = copy.chunk_size;
+		unique_number = copy.unique_number + 1;
+		std::cout << "Copy constructor with unique_number " << unique_number << std::endl << std::endl;
+	}
+	~MyAllocator()
+	{
+		std::cout << "Destructor with unique_number " << unique_number << std::endl;
+		std::cout << "Begin address " << (T*)memory.get() << std::endl << std::endl;
+	}
+
+	template <typename U>
+	struct rebind {
+		using other = MyAllocator<U>;
+	};
+
+	void print()
+	{
+		std::cout << "Allocate with unique_number " << unique_number << std::endl;
+		std::cout << "Capacity " << *capacity.get() << std::endl;
+		//std::cout << "Memory " << memory.get() << std::endl;
+
 	}
 
 	T* allocate(std::size_t n) {
-
+		print();
+		std::cout << "Allocate " << n << std::endl;
 		unsigned int object_size = sizeof(T) * n;
 
-		if (*capacity == 0 && object_size >= *chunk_size)
+		if (*capacity == 0)
 		{
-			*chunk_size = object_size * 2;
+			if(object_size >= *chunk_size)
+				*chunk_size = object_size * 2;
 			memory = memory_ptr(new uint8_t[*chunk_size]);
 		}
 		else if (*capacity.get() + object_size >= *chunk_size)
@@ -42,7 +61,7 @@ struct MyAllocator {
 
 		T* ret = reinterpret_cast<T*>(memory.get() + *capacity.get());
 		*capacity.get() += object_size;
-
+		std::cout << "Return " << ret << std::endl << std::endl;;
 		return ret;
 	}
 
@@ -53,6 +72,7 @@ struct MyAllocator {
 	*/
 	void deallocate(T* p, std::size_t n) {
 
+		std::cout << "Deallocate " << p << " Unique number " << unique_number << std::endl;
 		if (n * sizeof(T) == *capacity)
 		{
 			*capacity == 0; 

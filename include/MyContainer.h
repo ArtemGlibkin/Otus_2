@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <type_traits>
+#include <functional>
 
 
 template <typename T>
@@ -14,11 +15,10 @@ template <typename T, typename Alloc = std::allocator<Node<T>>>
 class MyContainer
 {
 private:
-
+	Alloc allocator;
 	using Ptr = std::shared_ptr<Node<T>>;
 	Ptr container_head = nullptr;
 	Ptr* container_last = &container_head;
-	Alloc allocator;
 	size_t container_size = 0;
 
 public:
@@ -49,12 +49,17 @@ public:
 
 	MyContainer() = default;
 
+	void deleter(T* ptr)
+	{
+		allocator.deallocate(ptr, 1);
+	}
+
 	template<typename U>
 	void push_back(U&& arg)
 	{
 		static_assert(std::is_same<std::decay_t<U>, std::decay_t<T>>::value, "U must be the same as T");
 		Ptr& ptr = *container_last;
-		ptr = std::allocate_shared<Node<T>>(allocator);
+		ptr = Ptr(allocator.allocate(1), [&](Node<T>* ptr) {allocator.deallocate(ptr, 1); });//std::allocate_shared<Node<T>>(allocator);//Ptr(allocator.allocate(1)ò );
 		ptr->element = arg;
 		container_last = &ptr->next;
 		container_size += 1;
