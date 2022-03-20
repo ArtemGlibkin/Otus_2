@@ -12,12 +12,11 @@ struct MyAllocator {
 
 	//Storing sizes in shared_ptr is required for the copy constructor to work properly
 	size_ptr chunk_size = std::make_shared<uint32_t>(100 * 128);
-	size_ptr capacity;
+	size_ptr capacity = std::make_shared<uint32_t>(0);
 
 	MyAllocator()
 	{
 		memory = memory_ptr(new uint8_t[*chunk_size]);
-		capacity = std::make_shared<uint32_t>(0);
 	}
 
 	template <typename U>
@@ -32,9 +31,10 @@ struct MyAllocator {
 
 		unsigned int object_size = sizeof(T) * n;
 
-		if (*capacity == 0 && object_size >= *chunk_size)
+		if (!memory)
 		{
-			*chunk_size = object_size * 2;
+			if(object_size >= *chunk_size)
+				*chunk_size = object_size * 2;
 			memory = memory_ptr(new uint8_t[*chunk_size]);
 		}
 		else if (*capacity.get() + object_size >= *chunk_size)
